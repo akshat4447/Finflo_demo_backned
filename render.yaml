@@ -1,0 +1,28 @@
+# Render Blueprint for the FinFlo backend.
+#
+# Deploy: Render dashboard → New → Blueprint → connect this repo → Apply.
+# Render will ask for the two secret values below (sync: false) during setup;
+# they are never stored in this file or the repo.
+services:
+  - type: web
+    name: finflo-backend
+    runtime: node
+    plan: free
+    # Closest Render region to India — keeps request latency low for field officers.
+    region: singapore
+    # npm ci installs exactly what package-lock.json pins; dev deps aren't needed to run.
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    # GET / returns {"status":"ok"}; Render waits for it before routing traffic.
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Claude API key used by /api/ocr and /api/f2f/extract. Entered in the
+      # Render dashboard when the Blueprint is applied.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # The deployed frontend's origin (e.g. https://your-app.netlify.app) to lock
+      # down CORS. Leave unset to allow any origin while testing.
+      - key: ALLOWED_ORIGIN
+        sync: false
